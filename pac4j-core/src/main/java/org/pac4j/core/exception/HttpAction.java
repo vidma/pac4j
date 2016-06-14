@@ -106,10 +106,23 @@ public class HttpAction extends Exception {
         context.setResponseStatus(HttpConstants.UNAUTHORIZED);
         return new HttpAction(message, HttpConstants.UNAUTHORIZED);
     }
-    
+
+    /**
+     * Build a digest auth popup credentials.
+     *
+     * @param message message
+     * @param context context
+     * @return a digest auth popup credentials
+     */
+    public static HttpAction unauthorizedNegotiate(final String message, final WebContext context) {
+        context.setResponseHeader(HttpConstants.AUTHENTICATE_HEADER, "Negotiate");
+        context.setResponseStatus(HttpConstants.UNAUTHORIZED);
+        return new HttpAction(message, HttpConstants.UNAUTHORIZED);
+    }
+
     /**
      * Build a forbidden response.
-     * 
+     *
      * @param message message
      * @param context context
      * @return a forbidden response
