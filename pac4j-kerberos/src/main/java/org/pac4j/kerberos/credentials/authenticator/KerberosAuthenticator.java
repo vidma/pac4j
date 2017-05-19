@@ -1,11 +1,9 @@
 package org.pac4j.kerberos.credentials.authenticator;
 
-import java.util.HashMap;
-
+import org.pac4j.core.exception.CredentialsException;
 import org.pac4j.kerberos.credentials.KerberosCredentials;
 import org.pac4j.kerberos.profile.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileHelper;
 import org.pac4j.core.profile.UserProfile;
 import org.pac4j.core.profile.creator.AuthenticatorProfileCreator;
 import org.pac4j.core.util.CommonHelper;
@@ -43,7 +41,7 @@ public class KerberosAuthenticator extends InitializableWebObject implements Aut
     }
 
     @Override
-    public void validate(KerberosCredentials credentials) {
+    public void validate(KerberosCredentials credentials,  WebContext context) throws CredentialsException {
         logger.debug("Try to validate Kerberos Token:" + credentials.getKerberosTicketAsString());
         KerberosTicketValidation ticketValidation = this.ticketValidator.validateTicket(credentials.getKerberosTicket());
         logger.debug("Kerberos Token validated");
@@ -54,14 +52,10 @@ public class KerberosAuthenticator extends InitializableWebObject implements Aut
         if (!subject.contains(UserProfile.SEPARATOR)) {
             subject = KerberosProfile.class.getSimpleName() + UserProfile.SEPARATOR + subject;
         }
+        // FIXME: var subject is practically not used
+        logger.debug("Succesfully validated " + subject);
 
-        CommonProfile profile = null;
-        try {
-            profile = ProfileHelper.buildUserProfileByClassCompleteName(subject, new HashMap<String, Object>(), KerberosProfile.class.getName());
-        } catch (final Exception e) {
-            logger.error("Cannot build instance", e);
-        }
-
+        CommonProfile profile = new KerberosProfile();
         credentials.setUserProfile(profile);
     }
 

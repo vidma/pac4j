@@ -25,11 +25,11 @@ public class KerberosExtractor implements CredentialsExtractor<KerberosCredentia
     }
 
     @Override
-    public KerberosCredentials extract(WebContext context) {
+    public KerberosCredentials extract(WebContext context) throws CredentialsException {
         final String header = context.getRequestHeader(HttpConstants.AUTHORIZATION_HEADER);
         if (header == null) {
             throw DeferredHttpAction.deferredHttpAction("Kerberos Header not found", new DeferredHttpActionCallback() {
-				
+
 				@Override
 				public void execute(WebContext context) {
 					// request additional information from browser

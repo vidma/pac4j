@@ -8,7 +8,7 @@ import org.pac4j.kerberos.profile.KerberosProfile;
 
 import org.pac4j.core.context.WebContext;
 import org.pac4j.core.credentials.authenticator.Authenticator;
-import org.pac4j.core.client.DirectClientV2;
+import org.pac4j.core.client.DirectClient;
 import org.pac4j.core.profile.creator.ProfileCreator;
 
 /**
@@ -17,7 +17,7 @@ import org.pac4j.core.profile.creator.ProfileCreator;
  * @author Garry Boyce
  * @since 1.9.1
  */
-public class KerberosClient extends DirectClientV2<KerberosCredentials, KerberosProfile> {
+public class KerberosClient extends DirectClient<KerberosCredentials, KerberosProfile> {
 
     public KerberosClient() {
     }
@@ -32,10 +32,11 @@ public class KerberosClient extends DirectClientV2<KerberosCredentials, Kerberos
     }
 
     @Override
-    protected void internalInit(final WebContext context) {
+    protected void clientInit(final WebContext context) {
     	setCredentialsExtractor(new KerberosExtractor(getName()));
         super.internalInit(context);
-        assertAuthenticatorTypes(KerberosAuthenticator.class);
+        setAuthenticator(new KerberosAuthenticator());
+        // FIXME: is this needed? assertAuthenticatorTypes(KerberosAuthenticator.class);
     }
 
 }

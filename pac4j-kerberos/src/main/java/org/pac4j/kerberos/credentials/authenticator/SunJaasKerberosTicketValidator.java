@@ -23,7 +23,7 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.pac4j.core.exception.BadCredentialsException;
 import org.pac4j.core.exception.TechnicalException;
-import org.pac4j.core.io.Resource;
+import org.springframework.core.io.Resource;
 import org.pac4j.core.util.CommonHelper;
 import org.pac4j.core.util.InitializableObject;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Garry Boyce
  * @since 1.9.1
- * 
+ *
  *  originally from spring-kerberos project
  */
 public class SunJaasKerberosTicketValidator extends InitializableObject implements KerberosTicketValidator {
@@ -49,7 +49,7 @@ public class SunJaasKerberosTicketValidator extends InitializableObject implemen
     private boolean debug = false;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     @Override
-    public KerberosTicketValidation validateTicket(byte[] token) {
+    public KerberosTicketValidation validateTicket(byte[] token) throws BadCredentialsException {
         try {
             return Subject.doAs(this.serviceSubject, new KerberosValidateAction(token));
         }
