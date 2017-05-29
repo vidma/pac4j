@@ -9,8 +9,9 @@ import org.junit.Test;
 import org.pac4j.core.client.Client;
 import org.pac4j.core.context.HttpConstants;
 import org.pac4j.core.context.MockWebContext;
-import org.pac4j.core.exception.HttpAction;
+import org.pac4j.core.exception.RequiresHttpAction;
 import org.pac4j.core.util.TestsConstants;
+import org.pac4j.http.profile.HttpProfile;
 import org.pac4j.kerberos.client.indirect.IndirectKerberosClient;
 import org.pac4j.kerberos.credentials.KerberosCredentials;
 import org.pac4j.kerberos.credentials.authenticator.KerberosAuthenticator;
@@ -21,7 +22,6 @@ import org.springframework.core.io.FileSystemResource;
 import java.io.File;
 import java.io.IOException;
 
-import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
 
 /**
@@ -80,29 +80,10 @@ public class KerberosClientsKerbyTests implements TestsConstants {
         kerbyServer.start();
     }
 
-    @Test
-    public void testDirectNoAuth() throws Exception {
-        // a request without "Authentication: (Negotiate|Kerberos) SomeToken" header, yields NULL credentials
-        assertNull(setupDirectKerberosClient().getCredentials(MockWebContext.create()));
-    }
-
-    @Test
-    public void testDirectAuthenticationWithRealTicket() throws Exception {
-        checkWithGoodTicket(setupDirectKerberosClient());
-    }
-
-
     // =====================
     // Indirect client below
     // =====================
 
-    @Test
-    public void testDirectIncorrectAuth() throws Exception {
-        // a request with an incorrect Kerberos token, yields NULL credentials also
-        final MockWebContext context = MockWebContext.create()
-            .addRequestHeader(HttpConstants.AUTHORIZATION_HEADER, "Negotiate " + "AAAbbAA123");
-        assertNull(setupDirectKerberosClient().getCredentials(context));
-    }
 
     @Test
     public void testIndirectNoAuth() throws Exception {
@@ -135,7 +116,7 @@ public class KerberosClientsKerbyTests implements TestsConstants {
         try {
             kerbClient.getCredentials(context);
             fail("should throw HttpAction");
-        } catch (final HttpAction e) {
+        } catch (final RequiresHttpAction e) {
             assertEquals(401, context.getResponseStatus());
             assertEquals("Negotiate", context.getResponseHeaders().get(HttpConstants.AUTHENTICATE_HEADER));
             assertEquals(expectedMsg, e.getMessage());
@@ -151,13 +132,9 @@ public class KerberosClientsKerbyTests implements TestsConstants {
         assertNotNull(credentials);
         System.out.println(credentials);
 
-        final KerberosProfile profile = client.getUserProfile(credentials, context);
+        final HttpProfile profile = client.getUserProfile(credentials, context);
         assertNotNull(profile);
         assertEquals(clientPrincipal, profile.getId());
-    }
-
-    private DirectKerberosClient setupDirectKerberosClient() {
-        return new DirectKerberosClient(new KerberosAuthenticator(getKerberosValidator()));
     }
 
     private IndirectKerberosClient setupIndirectKerberosClient() {

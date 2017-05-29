@@ -1,19 +1,7 @@
 package org.pac4j.kerberos.credentials.authenticator;
 
-import org.pac4j.core.exception.BadCredentialsException;
-import org.pac4j.kerberos.client.direct.DirectKerberosClient;
+import org.pac4j.core.exception.CredentialsException;
 
-/**
- * Implementations of this interface are used in
- * {@link DirectKerberosClient} to validate a Kerberos/SPNEGO
- * Ticket.
- *
- * @author Garry Boyce
- * @see DirectKerberosClient
- * <p>
- * originally from spring-kerberos project
- * @since 2.1.0
- */
 public interface KerberosTicketValidator {
 
     /**
@@ -21,7 +9,7 @@ public interface KerberosTicketValidator {
      *
      * @param token Kerbeos/SPNEGO ticket
      * @return authenticated kerberos principal
-     * @throws BadCredentialsException if the ticket is not valid
+     * @throws CredentialsException if the ticket is not valid
      */
-    KerberosTicketValidation validateTicket(byte[] token) throws BadCredentialsException;
+    KerberosTicketValidation validateTicket(byte[] token) throws CredentialsException;
 }

@@ -74,6 +74,7 @@
 		<module>pac4j-saml</module>
 		<module>pac4j-gae</module>
 		<module>pac4j-oidc</module>
+		<module>pac4j-kerberos</module>
 	</modules>
 
 	<dependencyManagement>
@@ -284,8 +285,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>

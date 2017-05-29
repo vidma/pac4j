@@ -13,6 +13,9 @@ import java.nio.charset.StandardCharsets;
  */
 public class KerberosCredentials extends Credentials {
     private byte[] kerberosTicket;
+    // We cant validate the ticket twice, so store it here
+    public String profileId = null;
+
     /**
      *
      */

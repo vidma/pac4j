@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.pac4j</groupId>
         <artifactId>pac4j</artifactId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>1.7.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>pac4j-kerberos</artifactId>
@@ -86,6 +86,11 @@
             <artifactId>integration-test</artifactId>
             <version>${kerby.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-http</artifactId>
+            <version>1.7.3-SNAPSHOT</version>
         </dependency>
 
         <!-- for testing -->

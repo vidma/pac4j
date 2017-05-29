@@ -1,7 +1,7 @@
 package org.pac4j.kerberos.credentials.authenticator;
 
 import org.ietf.jgss.*;
-import org.pac4j.core.exception.BadCredentialsException;
+import org.pac4j.core.exception.CredentialsException;
 import org.pac4j.core.exception.TechnicalException;
 import org.pac4j.core.util.CommonHelper;
 import org.pac4j.core.util.InitializableObject;
@@ -44,12 +44,13 @@ public class SunJaasKerberosTicketValidator extends InitializableObject implemen
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public KerberosTicketValidation validateTicket(byte[] token) throws BadCredentialsException {
+    public KerberosTicketValidation validateTicket(byte[] token) throws CredentialsException {
         init();
         try {
             return Subject.doAs(this.serviceSubject, new KerberosValidateAction(token));
         } catch (PrivilegedActionException e) {
-            throw new BadCredentialsException("Kerberos validation not successful", e);
+            e.printStackTrace();
+            throw new CredentialsException("Kerberos validation not successful");
         }
     }
 
@@ -157,7 +158,7 @@ public class SunJaasKerberosTicketValidator extends InitializableObject implemen
                 responseToken = context.acceptSecContext(kerberosTicket, 0, kerberosTicket.length);
                 gssName = context.getSrcName();
                 if (gssName == null) {
-                    throw new BadCredentialsException("GSSContext name of the context initiator is null");
+                    throw new CredentialsException("GSSContext name of the context initiator is null");
                 }
                 first = false;
             }

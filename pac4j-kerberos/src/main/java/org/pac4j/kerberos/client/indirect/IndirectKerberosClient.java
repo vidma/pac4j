@@ -5,62 +5,90 @@ package org.pac4j.kerberos.client.indirect;
  *
  * @since 2.1.0
  */
-import org.pac4j.core.client.IndirectClient;
+
+import org.pac4j.core.client.BaseClient;
+import org.pac4j.core.client.Mechanism;
+import org.pac4j.core.client.RedirectAction;
 import org.pac4j.core.context.WebContext;
-import org.pac4j.core.credentials.authenticator.Authenticator;
+import org.pac4j.core.credentials.Authenticator;
 import org.pac4j.core.exception.CredentialsException;
-import org.pac4j.core.exception.HttpAction;
-import org.pac4j.core.profile.creator.ProfileCreator;
-import org.pac4j.core.redirect.RedirectAction;
+import org.pac4j.core.exception.RequiresHttpAction;
 import org.pac4j.core.util.CommonHelper;
 import org.pac4j.kerberos.credentials.KerberosCredentials;
 import org.pac4j.kerberos.credentials.extractor.KerberosExtractor;
 import org.pac4j.kerberos.profile.KerberosProfile;
 
-public class IndirectKerberosClient extends IndirectClient<KerberosCredentials, KerberosProfile> {
-    public IndirectKerberosClient() {}
+import static org.pac4j.core.client.Mechanism.KERBEROS_MECHANISM;
+import static org.pac4j.core.util.CommonHelper.assertNotNull;
+
+public class IndirectKerberosClient extends BaseClient<KerberosCredentials, KerberosProfile> {
+    public KerberosExtractor extractor = null;
+
+    @Override
+    protected void internalInit() {
+        CommonHelper.assertNotNull("authenticator", getAuthenticator());
+    }
 
     public IndirectKerberosClient(final Authenticator authenticator) {
-        defaultAuthenticator(authenticator);
-    }
-
-    public IndirectKerberosClient(final Authenticator authenticator, final ProfileCreator<KerberosCredentials, KerberosProfile> profileCreator) {
-        defaultAuthenticator(authenticator);
-        defaultProfileCreator(profileCreator);
+        extractor = new KerberosExtractor(getName());
+        setAuthenticator(authenticator);
     }
 
     @Override
-    protected void clientInit(final WebContext context) {
-        defaultRedirectActionBuilder(webContext ->  RedirectAction.redirect(computeFinalCallbackUrl(webContext)));
-        defaultCredentialsExtractor(new KerberosExtractor(getName()));
+    protected RedirectAction retrieveRedirectAction(final WebContext context) {
+        return RedirectAction.redirect(getContextualCallbackUrl(context));
     }
 
     @Override
-    protected KerberosCredentials retrieveCredentials(final WebContext context) throws HttpAction {
-        CommonHelper.assertNotNull("credentialsExtractor", getCredentialsExtractor());
-        CommonHelper.assertNotNull("authenticator", getAuthenticator());
+    protected BaseClient<KerberosCredentials, KerberosProfile> newClient() {
+        // used in cloning
+        return new IndirectKerberosClient(getAuthenticator());
+    }
+
+    @Override
+    protected boolean isDirectRedirection() {
+        return true; // like in AbstractHeaderClient
+    }
+
+    @Override
+    protected KerberosCredentials retrieveCredentials(final WebContext context) throws RequiresHttpAction {
+        assertNotNull("credentialsExtractor", extractor);
+        assertNotNull("authenticator", getAuthenticator());
 
         final KerberosCredentials credentials;
         try {
             // retrieve credentials
-            credentials = getCredentialsExtractor().extract(context);
+            credentials = extractor.extract(context);
             logger.debug("kerberos credentials : {}", credentials);
             if (credentials == null) {
-                throw HttpAction.unauthorizedNegotiate("Kerberos Header not found", context);
+                throw RequiresHttpAction.unauthorizedNegotiate("Kerberos Header not found", context);
             }
             // validate credentials
-            getAuthenticator().validate(credentials, context);
+            getAuthenticator().validate(credentials);
         } catch (final CredentialsException e) {
-            throw HttpAction.unauthorizedNegotiate("Kerberos auth failed", context);
+            throw RequiresHttpAction.unauthorizedNegotiate("Kerberos auth failed", context);
         }
 
         return credentials;
     }
 
     @Override
+    protected KerberosProfile retrieveUserProfile(final KerberosCredentials credentials, final WebContext context) {
+        // create the user profile
+        KerberosProfile profile = new KerberosProfile();
+        assertNotNull("extracted KerberosCredentials.profileId", credentials.profileId);
+        profile.setId(credentials.profileId);
+        return profile;
+    }
+
+    @Override
+    public Mechanism getMechanism() {
+        return KERBEROS_MECHANISM;
+    }
+
+    @Override
     public String toString() {
         return CommonHelper.toString(this.getClass(), "callbackUrl", this.callbackUrl, "name", getName(),
-            "extractor", getCredentialsExtractor(), "authenticator", getAuthenticator(),
-            "profileCreator", getProfileCreator());
+            "extractor",  "authenticator", getAuthenticator());
     }
 }
