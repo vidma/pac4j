@@ -74,7 +74,20 @@ public class RequiresHttpAction extends Exception {
         context.writeResponseContent(content);
         return new RequiresHttpAction(message, HttpConstants.OK);
     }
-    
+
+    /**
+     * Build a response requesting to provide credentials via Kerberos/SPNEGO Negotiate mechanism.
+     *
+     * @param message message
+     * @param context context
+     * @return 401 Unauthorized with "WWW-Authenticate: Negotiate"
+     */
+    public static RequiresHttpAction unauthorizedNegotiate(final String message, final WebContext context) {
+        context.setResponseHeader(HttpConstants.AUTHENTICATE_HEADER, "Negotiate");
+        context.setResponseStatus(HttpConstants.UNAUTHORIZED);
+        return new RequiresHttpAction(message, HttpConstants.UNAUTHORIZED);
+    }
+
     /**
      * Build a basic auth popup credentials.
      * 
